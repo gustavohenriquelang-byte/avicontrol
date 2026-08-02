@@ -1,0 +1,5 @@
+# Normaliza quebras de linha: LF no repositório (build roda em Linux/Vercel).
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.webp binary
