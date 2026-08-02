@@ -3,7 +3,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/server";
 import { ACTIVE_ORG_COOKIE, requireUser } from "@/lib/auth/context";
 
 /** Define a organização ativa (valida vínculo) e volta para a raiz. */
@@ -35,35 +34,35 @@ export async function setActiveOrg(formData: FormData) {
   redirect("/");
 }
 
+export interface OnboardingResult {
+  ok: boolean;
+  error?: string;
+}
+
 /**
  * Onboarding: cria a primeira empresa e vincula o usuário como admin.
- * Usa o cliente admin (service role) porque o INSERT em organizations
- * é controlado no servidor (não há política de INSERT para membros).
+ * Usa a função segura `create_org_and_join` no banco (SECURITY DEFINER),
+ * chamada com a sessão do próprio usuário — não depende da chave service_role.
  */
-export async function createFirstOrganization(formData: FormData) {
+export async function createFirstOrganization(
+  _prev: OnboardingResult,
+  formData: FormData
+): Promise<OnboardingResult> {
   const name = String(formData.get("name") ?? "").trim();
-  if (!name) throw new Error("Informe o nome da empresa.");
+  if (!name) return { ok: false, error: "Informe o nome da empresa." };
 
-  const user = await requireUser();
-  const admin = createAdminClient();
+  await requireUser();
+  const supabase = await createClient();
 
-  const { data: org, error: orgErr } = await admin
-    .from("organizations")
-    .insert({ name })
-    .select("id")
-    .single();
-  if (orgErr || !org) throw new Error("Não foi possível criar a empresa.");
-
-  const { error: linkErr } = await admin.from("organization_users").insert({
-    organization_id: org.id,
-    user_id: user.id,
-    role: "admin",
-    active: true,
+  const { data: orgId, error } = await supabase.rpc("create_org_and_join", {
+    p_name: name,
   });
-  if (linkErr) throw new Error("Empresa criada, mas houve erro ao vincular o usuário.");
+  if (error || !orgId) {
+    return { ok: false, error: "Não foi possível criar a empresa. Tente novamente." };
+  }
 
   const cookieStore = await cookies();
-  cookieStore.set(ACTIVE_ORG_COOKIE, org.id, {
+  cookieStore.set(ACTIVE_ORG_COOKIE, orgId as string, {
     httpOnly: true,
     sameSite: "lax",
     path: "/",

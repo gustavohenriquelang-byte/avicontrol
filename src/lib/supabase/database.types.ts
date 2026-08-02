@@ -786,6 +786,7 @@ export interface Database {
       is_org_member: { Args: { org: string }; Returns: boolean };
       current_org_role: { Args: { org: string }; Returns: UserRole };
       has_org_role: { Args: { org: string; roles: UserRole[] }; Returns: boolean };
+      create_org_and_join: { Args: { p_name: string }; Returns: string };
     };
     Enums: {
       user_role: UserRole;
