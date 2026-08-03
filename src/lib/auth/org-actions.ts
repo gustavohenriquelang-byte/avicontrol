@@ -58,7 +58,9 @@ export async function createFirstOrganization(
     p_name: name,
   });
   if (error || !orgId) {
-    return { ok: false, error: "Não foi possível criar a empresa. Tente novamente." };
+    // Mostra o motivo real (ajuda no diagnóstico durante a configuração).
+    const detail = error?.message ? ` (${error.message})` : "";
+    return { ok: false, error: `Não foi possível criar a empresa${detail}` };
   }
 
   const cookieStore = await cookies();
