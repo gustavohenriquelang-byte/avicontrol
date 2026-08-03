@@ -63,7 +63,10 @@ export async function createOrgUser(
           "Já existe uma conta com este e-mail. Peça para a pessoa usar 'Esqueci a senha' ou use outro e-mail.",
       };
     }
-    return { ok: false, error: "Não foi possível criar o usuário." };
+    return {
+      ok: false,
+      error: `Não foi possível criar o usuário${msg ? ` (${msg})` : ""}.`,
+    };
   }
 
   const userId = created.user.id;
