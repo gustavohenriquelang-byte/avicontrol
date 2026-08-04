@@ -7,6 +7,7 @@ const PUBLIC_ROUTES = [
   "/recuperar-senha",
   "/redefinir-senha",
   "/auth",
+  "/api/ping",
 ];
 
 /**
