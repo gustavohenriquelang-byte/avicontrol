@@ -424,6 +424,60 @@ export const demoManureSales: ManureSaleRow[] = [
   { id: "msale-3", organization_id: DEMO_ORG_ID, farm_id: "farm-1", sale_date: addDaysISO(DEMO_TODAY, -1), buyer: "Agropecuária Vale Verde", quantity: 8, unit: "tonelada", quantity_kg: 8000, unit_price: 185, total: 1480, payment_method: "Dinheiro", notes: null, created_by: "demo-user", created_at: now, farms: { name: "Granja Sede" } },
 ];
 
+type WeighRow = Tables<"bird_weights"> & { flocks: { code: string } | null };
+export const demoWeighings: WeighRow[] = [
+  weigh("bw-1", "flock-1", addDaysISO(DEMO_TODAY, -2), 210, 1520, 1385, 1640, 58.2, 3.83, 88.5, 1500),
+  weigh("bw-2", "flock-1", addDaysISO(DEMO_TODAY, -30), 182, 1410, 1250, 1560, 62.1, 4.4, 85.0, 1400),
+  weigh("bw-3", "flock-2", addDaysISO(DEMO_TODAY, -5), 133, 1180, 1040, 1320, 55.0, 4.66, 82.3, 1225),
+];
+
+function weigh(
+  id: string,
+  flockId: string,
+  date: string,
+  ageDays: number,
+  mean: number,
+  min: number,
+  max: number,
+  std: number,
+  cv: number,
+  uniformity: number,
+  expected: number
+): WeighRow {
+  return {
+    id,
+    organization_id: DEMO_ORG_ID,
+    flock_id: flockId,
+    weigh_date: date,
+    age_days: ageDays,
+    sample_size: 100,
+    mean_g: mean,
+    min_g: min,
+    max_g: max,
+    std_dev: std,
+    cv,
+    uniformity,
+    expected_g: expected,
+    samples: null,
+    notes: null,
+    created_by: "demo-user",
+    created_at: now,
+    flocks: { code: flockId === "flock-1" ? "L01" : "L02" },
+  };
+}
+
+type EnvRow = Tables<"environment_records"> & { houses: { name: string } | null };
+export const demoEnvironment: EnvRow[] = [
+  { id: "env-1", organization_id: DEMO_ORG_ID, farm_id: "farm-1", house_id: "house-1", record_date: addDaysISO(DEMO_TODAY, -1), temp_min: 19.4, temp_max: 28.1, temp_current: 24.2, humidity: 66, ammonia: 12, co2: 1800, luminosity: 40, light_hours: 16, ventilation: "Automática", notes: null, created_by: "demo-user", created_at: now, houses: { name: "Aviário 1" } },
+  { id: "env-2", organization_id: DEMO_ORG_ID, farm_id: "farm-1", house_id: "house-2", record_date: addDaysISO(DEMO_TODAY, -1), temp_min: 20.1, temp_max: 29.0, temp_current: 25.0, humidity: 70, ammonia: 18, co2: 2100, luminosity: 35, light_hours: 16, ventilation: "Manual", notes: null, created_by: "demo-user", created_at: now, houses: { name: "Aviário 2" } },
+];
+
+export const demoTasks: (Tables<"tasks"> & { flocks: { code: string } | null })[] = [
+  { id: "task-1", organization_id: DEMO_ORG_ID, title: "Vacinar lote L02 (Newcastle)", description: "Aplicar via água", farm_id: "farm-1", house_id: null, flock_id: "flock-2", assigned_to: null, priority: "alta", due_date: addDaysISO(DEMO_TODAY, 2), recurrence: null, status: "pendente", created_by: "demo-user", created_at: now, updated_at: now, flocks: { code: "L02" } },
+  { id: "task-2", organization_id: DEMO_ORG_ID, title: "Limpeza do reservatório de água", description: null, farm_id: "farm-1", house_id: null, flock_id: null, assigned_to: null, priority: "media", due_date: addDaysISO(DEMO_TODAY, 5), recurrence: "Mensal", status: "em_andamento", created_by: "demo-user", created_at: now, updated_at: now, flocks: null },
+  { id: "task-3", organization_id: DEMO_ORG_ID, title: "Conferir estoque de ração", description: null, farm_id: "farm-1", house_id: null, flock_id: null, assigned_to: null, priority: "baixa", due_date: addDaysISO(DEMO_TODAY, -1), recurrence: null, status: "concluida", created_by: "demo-user", created_at: now, updated_at: now, flocks: null },
+];
+
 /** Métricas agregadas para o dashboard em modo demo. */
 export const demoOverview = {
   farms: demoFarms.length,

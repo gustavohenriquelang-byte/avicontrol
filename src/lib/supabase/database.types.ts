@@ -80,6 +80,11 @@ export type EggMovementType =
 
 export type ManureUnit = "kg" | "tonelada" | "saco" | "big_bag" | "m3";
 
+export type TaskPriority = "baixa" | "media" | "alta";
+export type TaskStatus = "pendente" | "em_andamento" | "concluida" | "cancelada";
+export type AlertLevel = "informativo" | "atencao" | "critico";
+export type AlertStatus = "aberto" | "reconhecido" | "resolvido";
+
 export interface Database {
   public: {
     Tables: {
@@ -777,6 +782,128 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["manure_sales"]["Insert"]>;
+        Relationships: [];
+      };
+      bird_weights: {
+        Row: {
+          id: string;
+          organization_id: string;
+          flock_id: string;
+          weigh_date: string;
+          age_days: number | null;
+          sample_size: number;
+          mean_g: number | null;
+          min_g: number | null;
+          max_g: number | null;
+          std_dev: number | null;
+          cv: number | null;
+          uniformity: number | null;
+          expected_g: number | null;
+          samples: number[] | null;
+          notes: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          flock_id: string;
+          weigh_date?: string;
+          age_days?: number | null;
+          sample_size?: number;
+          mean_g?: number | null;
+          min_g?: number | null;
+          max_g?: number | null;
+          std_dev?: number | null;
+          cv?: number | null;
+          uniformity?: number | null;
+          expected_g?: number | null;
+          samples?: number[] | null;
+          notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["bird_weights"]["Insert"]>;
+        Relationships: [];
+      };
+      environment_records: {
+        Row: {
+          id: string;
+          organization_id: string;
+          farm_id: string | null;
+          house_id: string | null;
+          record_date: string;
+          temp_min: number | null;
+          temp_max: number | null;
+          temp_current: number | null;
+          humidity: number | null;
+          ammonia: number | null;
+          co2: number | null;
+          luminosity: number | null;
+          light_hours: number | null;
+          ventilation: string | null;
+          notes: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          farm_id?: string | null;
+          house_id?: string | null;
+          record_date?: string;
+          temp_min?: number | null;
+          temp_max?: number | null;
+          temp_current?: number | null;
+          humidity?: number | null;
+          ammonia?: number | null;
+          co2?: number | null;
+          luminosity?: number | null;
+          light_hours?: number | null;
+          ventilation?: string | null;
+          notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["environment_records"]["Insert"]>;
+        Relationships: [];
+      };
+      tasks: {
+        Row: {
+          id: string;
+          organization_id: string;
+          title: string;
+          description: string | null;
+          farm_id: string | null;
+          house_id: string | null;
+          flock_id: string | null;
+          assigned_to: string | null;
+          priority: TaskPriority;
+          due_date: string | null;
+          recurrence: string | null;
+          status: TaskStatus;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          title: string;
+          description?: string | null;
+          farm_id?: string | null;
+          house_id?: string | null;
+          flock_id?: string | null;
+          assigned_to?: string | null;
+          priority?: TaskPriority;
+          due_date?: string | null;
+          recurrence?: string | null;
+          status?: TaskStatus;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["tasks"]["Insert"]>;
         Relationships: [];
       };
     };

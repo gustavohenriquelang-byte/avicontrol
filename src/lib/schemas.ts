@@ -235,6 +235,65 @@ export const FEED_MOVEMENT_LABELS: Record<string, string> = {
   inventario: "Inventário",
 };
 
+export const weighingSchema = z.object({
+  flock_id: z.string().uuid("Selecione o lote"),
+  weigh_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida"),
+  age_days: optionalNumber,
+  weights: z.string().min(1, "Informe os pesos"),
+  notes: optionalText,
+});
+export type WeighingInput = z.infer<typeof weighingSchema>;
+
+/** Converte texto livre (vírgula/espaço/linha) em lista de pesos numéricos. */
+export function parseWeights(raw: string): number[] {
+  return raw
+    .split(/[\s,;]+/)
+    .map((s) => Number(s.replace(",", ".")))
+    .filter((n) => Number.isFinite(n) && n > 0);
+}
+
+export const environmentSchema = z.object({
+  house_id: z.string().uuid().optional().or(z.literal("").transform(() => undefined)),
+  farm_id: z.string().uuid().optional().or(z.literal("").transform(() => undefined)),
+  record_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida"),
+  temp_min: optionalNumber,
+  temp_max: optionalNumber,
+  temp_current: optionalNumber,
+  humidity: optionalNumber,
+  ammonia: optionalNumber,
+  co2: optionalNumber,
+  luminosity: optionalNumber,
+  light_hours: optionalNumber,
+  ventilation: optionalText,
+  notes: optionalText,
+});
+export type EnvironmentInput = z.infer<typeof environmentSchema>;
+
+export const taskSchema = z.object({
+  title: z.string().trim().min(2, "Informe o título"),
+  description: optionalText,
+  farm_id: z.string().uuid().optional().or(z.literal("").transform(() => undefined)),
+  flock_id: z.string().uuid().optional().or(z.literal("").transform(() => undefined)),
+  assigned_to: z.string().uuid().optional().or(z.literal("").transform(() => undefined)),
+  priority: z.enum(["baixa", "media", "alta"]),
+  due_date: optionalText,
+  status: z.enum(["pendente", "em_andamento", "concluida", "cancelada"]),
+});
+export type TaskInput = z.infer<typeof taskSchema>;
+
+export const TASK_PRIORITY_LABELS: Record<string, string> = {
+  baixa: "Baixa",
+  media: "Média",
+  alta: "Alta",
+};
+
+export const TASK_STATUS_LABELS: Record<string, string> = {
+  pendente: "Pendente",
+  em_andamento: "Em andamento",
+  concluida: "Concluída",
+  cancelada: "Cancelada",
+};
+
 const manureUnit = z.enum(["kg", "tonelada", "saco", "big_bag", "m3"]);
 
 export const manureProductionSchema = z.object({
