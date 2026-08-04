@@ -1,10 +1,10 @@
 "use client";
 
-import { useActionState, useState, useMemo } from "react";
-import { AlertCircle, CheckCircle2, Copy, Lock } from "lucide-react";
-import { saveDaily, type DailyResult } from "./actions";
+import { useState, useMemo, type FormEvent } from "react";
+import { AlertCircle, CheckCircle2, Copy, Lock, CloudOff } from "lucide-react";
 import type { Tables } from "@/lib/supabase/database.types";
 import { dailyMetrics } from "@/lib/domain/daily";
+import { enqueueDaily } from "@/lib/offline";
 import { formatPercent, formatDecimal } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,14 @@ export interface FlockLite {
   current_quantity: number;
 }
 
+interface SubmitResult {
+  ok: boolean;
+  error?: string;
+  difference?: number;
+  status?: "draft" | "closed";
+  offline?: boolean;
+}
+
 const EGG_FIELDS: { key: string; label: string }[] = [
   { key: "eggs_good", label: "Bons" },
   { key: "eggs_dirty", label: "Sujos" },
@@ -36,7 +44,6 @@ const EGG_FIELDS: { key: string; label: string }[] = [
 
 const numeric = (v: number | null | undefined) => (v == null ? "" : String(v));
 
-/** Campo numérico estável (definido fora do form para não remontar/perder foco). */
 function NumberField({
   name,
   label,
@@ -88,9 +95,8 @@ export function DailyForm({
   canJustify: boolean;
 }) {
   const closed = record?.status === "closed";
-  const [state, action, pending] = useActionState<DailyResult, FormData>(saveDaily, {
-    ok: false,
-  });
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<SubmitResult>({ ok: false });
 
   const initial: Record<string, string> = {
     birds_start: numeric(record?.birds_start ?? flock.current_quantity),
@@ -163,8 +169,48 @@ export function DailyForm({
     });
   }
 
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+    const intent = submitter?.value === "close" ? "close" : "draft";
+
+    const payload: Record<string, unknown> = Object.fromEntries(new FormData(form).entries());
+    payload.intent = intent;
+    const label = `Lote ${flock.code} · ${date}`;
+
+    setSubmitting(true);
+    setResult({ ok: false });
+
+    const queueOffline = async () => {
+      await enqueueDaily(payload, label);
+      window.dispatchEvent(new Event("avicontrol:queued"));
+      setResult({ ok: true, offline: true, status: intent === "close" ? "closed" : "draft" });
+    };
+
+    try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        await queueOffline();
+      } else {
+        const res = await fetch("/api/daily", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = (await res.json().catch(() => ({}))) as SubmitResult;
+        if (!res.ok && !data.error) data.error = "Não foi possível salvar.";
+        setResult(data);
+      }
+    } catch {
+      // Rede caiu durante o envio → guarda offline.
+      await queueOffline();
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
-    <form action={action} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <input type="hidden" name="flock_id" value={flock.id} />
       <input type="hidden" name="farm_id" value={flock.farm_id} />
       <input type="hidden" name="house_id" value={flock.house_id ?? ""} />
@@ -177,18 +223,24 @@ export function DailyForm({
           autorizado será adicionada em etapa futura.
         </div>
       )}
-      {state.error && (
+      {result.error && (
         <div
           role="alert"
           className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
         >
-          <AlertCircle className="size-4 shrink-0" /> {state.error}
+          <AlertCircle className="size-4 shrink-0" /> {result.error}
         </div>
       )}
-      {state.ok && (
+      {result.ok && result.offline && (
+        <div className="flex items-center gap-2 rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-[#8a5d0f]">
+          <CloudOff className="size-4" /> Salvo no dispositivo. Será enviado
+          automaticamente quando houver internet.
+        </div>
+      )}
+      {result.ok && !result.offline && (
         <div className="flex items-center gap-2 rounded-md border border-brand/30 bg-brand-light px-3 py-2 text-sm text-brand-dark">
           <CheckCircle2 className="size-4" />
-          {state.status === "closed" ? "Dia fechado com sucesso." : "Rascunho salvo."}
+          {result.status === "closed" ? "Dia fechado com sucesso." : "Rascunho salvo."}
         </div>
       )}
 
@@ -347,20 +399,20 @@ export function DailyForm({
             value="draft"
             variant="outline"
             size="lg"
-            disabled={pending}
+            disabled={submitting}
             className="flex-1 bg-card"
           >
-            {pending ? "Salvando..." : "Salvar rascunho"}
+            {submitting ? "Salvando..." : "Salvar rascunho"}
           </Button>
           <Button
             type="submit"
             name="intent"
             value="close"
             size="lg"
-            disabled={pending}
+            disabled={submitting}
             className="flex-1"
           >
-            {pending ? "Fechando..." : "Fechar dia"}
+            {submitting ? "Fechando..." : "Fechar dia"}
           </Button>
         </div>
       )}

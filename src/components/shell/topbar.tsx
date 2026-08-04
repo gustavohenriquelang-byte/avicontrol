@@ -5,6 +5,7 @@ import { ChevronDown, LogOut, Building2, User } from "lucide-react";
 import { logoutAction } from "@/app/(auth)/login/actions";
 import { setActiveOrg } from "@/lib/auth/org-actions";
 import { ROLE_LABELS, type Role } from "@/lib/auth/roles";
+import { OfflineIndicator } from "@/components/shell/offline-indicator";
 import { cn } from "@/lib/utils";
 
 interface Membership {
@@ -87,8 +88,11 @@ export function Topbar({ fullName, email, activeOrg, memberships }: TopbarProps)
         )}
       </div>
 
-      {/* Menu do usuário */}
-      <div className="relative" ref={userRef}>
+      <div className="flex items-center gap-2">
+        <OfflineIndicator />
+
+        {/* Menu do usuário */}
+        <div className="relative" ref={userRef}>
         <button
           type="button"
           onClick={() => setUserOpen((o) => !o)}
@@ -131,7 +135,8 @@ export function Topbar({ fullName, email, activeOrg, memberships }: TopbarProps)
               </button>
             </form>
           </div>
-        )}
+          )}
+        </div>
       </div>
     </header>
   );
