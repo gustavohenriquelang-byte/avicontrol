@@ -99,6 +99,7 @@ export async function syncQueue(): Promise<SyncOutcome> {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(item.payload),
+        redirect: "manual",
       });
     } catch {
       // Sem rede: interrompe e mantém a fila.

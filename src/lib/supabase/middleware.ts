@@ -49,8 +49,10 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isPublic = PUBLIC_ROUTES.some((p) => pathname.startsWith(p));
+  // Rotas de API cuidam da própria autenticação e devolvem JSON (não redirecionam).
+  const isApi = pathname.startsWith("/api/");
 
-  if (!user && !isPublic) {
+  if (!user && !isPublic && !isApi) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirectTo", pathname);

@@ -196,6 +196,7 @@ export function DailyForm({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
+          redirect: "manual",
         });
         const data = (await res.json().catch(() => ({}))) as SubmitResult;
         if (!res.ok && !data.error) data.error = "Não foi possível salvar.";
