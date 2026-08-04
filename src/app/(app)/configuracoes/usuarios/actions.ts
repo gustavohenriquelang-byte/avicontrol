@@ -14,6 +14,49 @@ export interface FormResult {
   tempPassword?: string;
 }
 
+/** Gera uma senha temporária legível. */
+function genTempPassword() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  let s = "";
+  for (let i = 0; i < 10; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
+}
+
+/**
+ * Redefine a senha de um membro (admin). Gera uma nova senha temporária e a
+ * devolve para o admin entregar à pessoa, que depois troca no próprio perfil.
+ */
+export async function resetUserPassword(
+  userId: string
+): Promise<{ ok: boolean; password?: string; error?: string }> {
+  const { org, ctx } = await requirePermission("configuracoes", "manage");
+
+  // Segurança: o usuário-alvo precisa pertencer a esta empresa.
+  const supabase = await createClient();
+  const { data: membership } = await supabase
+    .from("organization_users")
+    .select("id")
+    .eq("organization_id", org.organizationId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (!membership) return { ok: false, error: "Usuário não pertence à empresa." };
+
+  const admin = createAdminClient();
+  const password = genTempPassword();
+  const { error } = await admin.auth.admin.updateUserById(userId, { password });
+  if (error) return { ok: false, error: "Não foi possível redefinir a senha." };
+
+  await writeAudit({
+    organizationId: org.organizationId,
+    userId: ctx.userId,
+    action: "reset_password",
+    table: "organization_users",
+    recordId: userId,
+  });
+
+  return { ok: true, password };
+}
+
 const createUserSchema = z.object({
   full_name: z.string().trim().min(2, "Informe o nome"),
   email: z.string().trim().toLowerCase().email("E-mail inválido"),

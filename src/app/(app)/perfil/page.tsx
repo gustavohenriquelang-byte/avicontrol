@@ -2,6 +2,7 @@ import { getSessionContext } from "@/lib/auth/context";
 import { ROLE_LABELS } from "@/lib/auth/roles";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
+import { ChangePasswordForm } from "./change-password-form";
 
 export const metadata = { title: "Meu perfil" };
 
@@ -34,6 +35,8 @@ export default async function PerfilPage() {
           </div>
         </CardContent>
       </Card>
+
+      <ChangePasswordForm />
     </>
   );
 }

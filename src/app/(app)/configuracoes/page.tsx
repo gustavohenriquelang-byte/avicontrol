@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, Warehouse, Users, Ruler, Boxes, Dna } from "lucide-react";
+import { Building2, Warehouse, Users, Ruler, Boxes, Dna, ScrollText } from "lucide-react";
 import { requirePermission } from "@/lib/auth/context";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,6 +42,12 @@ const SECTIONS = [
     label: "Unidades de medida",
     description: "Unidades e fatores de conversão.",
     icon: Ruler,
+  },
+  {
+    href: "/configuracoes/auditoria",
+    label: "Auditoria",
+    description: "Histórico de ações no sistema.",
+    icon: ScrollText,
   },
 ];
 

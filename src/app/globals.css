@@ -54,3 +54,23 @@
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+/* Impressão de relatórios: esconde navegação e mostra só o conteúdo. */
+@media print {
+  aside,
+  header,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  body {
+    background: #fff !important;
+  }
+  .print-area {
+    box-shadow: none !important;
+    border: none !important;
+  }
+}

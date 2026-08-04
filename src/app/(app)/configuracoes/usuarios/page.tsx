@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CreateUserForm } from "./create-user-form";
-import { RoleSelect, ActiveToggle } from "./user-row-actions";
+import { RoleSelect, UserActionsMenu } from "./user-row-actions";
 
 export const metadata: Metadata = { title: "Usuários" };
 
@@ -127,7 +127,9 @@ export default async function UsuariosPage() {
                     </TableCell>
                     {canManage && (
                       <TableCell>
-                        {!isSelf && <ActiveToggle memberId={m.id} active={m.active} />}
+                        {!isSelf && (
+                          <UserActionsMenu memberId={m.id} userId={m.user_id} active={m.active} />
+                        )}
                       </TableCell>
                     )}
                   </TableRow>
