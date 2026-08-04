@@ -48,14 +48,21 @@ export default async function UsuariosPage() {
     ];
   } else {
     const supabase = await createClient();
-    const { data } = await supabase
+    // Busca os vínculos e os perfis separadamente (não há FK direta entre
+    // organization_users e profiles para o Supabase relacionar sozinho).
+    const { data: rows } = await supabase
       .from("organization_users")
-      .select("id, user_id, role, active, profiles(full_name, email)")
+      .select("id, user_id, role, active")
       .eq("organization_id", org.organizationId);
-    members = (data ?? []).map((m) => {
-      const p = (m as unknown as {
-        profiles: { full_name: string | null; email: string | null } | null;
-      }).profiles;
+
+    const ids = (rows ?? []).map((r) => r.user_id);
+    const { data: profs } = ids.length
+      ? await supabase.from("profiles").select("id, full_name, email").in("id", ids)
+      : { data: [] as { id: string; full_name: string | null; email: string | null }[] };
+    const profMap = new Map((profs ?? []).map((p) => [p.id, p]));
+
+    members = (rows ?? []).map((m) => {
+      const p = profMap.get(m.user_id);
       return {
         id: m.id,
         user_id: m.user_id,
