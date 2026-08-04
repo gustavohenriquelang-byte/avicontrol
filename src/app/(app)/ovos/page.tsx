@@ -8,6 +8,7 @@ import {
   demoEggInventory,
   demoFarms,
   demoFlocks,
+  demoDailyRecords,
 } from "@/lib/demo";
 import { EGG_QUALITY_LABELS } from "@/lib/schemas";
 import { convertEggs } from "@/lib/domain/inventory";
@@ -41,11 +42,44 @@ export default async function OvosPage() {
   let inventory: Row[];
   let farms: { id: string; name: string }[];
   let flocks: { id: string; name: string }[];
+  let collections: {
+    id: string;
+    record_date: string;
+    flockCode: string;
+    eggs_total: number;
+    commercial: number;
+    losses: number;
+  }[];
+
+  const mapCollection = (r: {
+    id: string;
+    record_date: string;
+    eggs_total: number;
+    eggs_good: number;
+    eggs_dirty: number;
+    eggs_cracked: number;
+    eggs_broken: number;
+    eggs_deformed: number;
+    eggs_discarded: number;
+    flockCode: string;
+  }) => ({
+    id: r.id,
+    record_date: r.record_date,
+    flockCode: r.flockCode,
+    eggs_total: r.eggs_total,
+    commercial: r.eggs_good + r.eggs_dirty,
+    losses: r.eggs_cracked + r.eggs_broken + r.eggs_deformed + r.eggs_discarded,
+  });
 
   if (isDemoMode()) {
     inventory = demoEggInventory;
     farms = demoFarms.map((f) => ({ id: f.id, name: f.name }));
     flocks = demoFlocks.map((f) => ({ id: f.id, name: f.code }));
+    const codeById = new Map(demoFlocks.map((f) => [f.id, f.code]));
+    collections = [...demoDailyRecords]
+      .sort((a, b) => b.record_date.localeCompare(a.record_date))
+      .slice(0, 20)
+      .map((r) => mapCollection({ ...r, flockCode: codeById.get(r.flock_id) ?? "—" }));
   } else {
     const supabase = await createClient();
     const [{ data: inv }, { data: fa }, { data: fl }] = await Promise.all([
@@ -72,6 +106,22 @@ export default async function OvosPage() {
     inventory = (inv ?? []) as unknown as Row[];
     farms = fa ?? [];
     flocks = (fl ?? []).map((f) => ({ id: f.id, name: f.code }));
+
+    const { data: daily } = await supabase
+      .from("daily_records")
+      .select(
+        "id, record_date, eggs_total, eggs_good, eggs_dirty, eggs_cracked, eggs_broken, eggs_deformed, eggs_discarded, flocks(code)"
+      )
+      .eq("organization_id", org.organizationId)
+      .order("record_date", { ascending: false })
+      .limit(20);
+    collections = (daily ?? []).map((r) =>
+      mapCollection({
+        ...(r as unknown as Parameters<typeof mapCollection>[0]),
+        flockCode:
+          (r as unknown as { flocks: { code: string } | null }).flocks?.code ?? "—",
+      })
+    );
   }
 
   const totalUnits = inventory.reduce((s, i) => s + i.quantity, 0);
@@ -101,6 +151,48 @@ export default async function OvosPage() {
           </Card>
         ))}
       </div>
+
+      {/* Histórico diário de ovos coletados (vem do lançamento diário) */}
+      {collections.length > 0 && (
+        <Card>
+          <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
+            <span className="text-sm font-semibold text-ink">
+              Coletas diárias (últimos lançamentos)
+            </span>
+            <span className="text-xs text-ink-muted">
+              origem: lançamento diário
+            </span>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Data</TableHead>
+                <TableHead>Lote</TableHead>
+                <TableHead className="text-right">Coletados</TableHead>
+                <TableHead className="text-right">Comerciais</TableHead>
+                <TableHead className="text-right">Perdas</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {collections.map((c) => (
+                <TableRow key={c.id}>
+                  <TableCell className="tabular-nums">{formatDate(c.record_date)}</TableCell>
+                  <TableCell className="font-medium">{c.flockCode}</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {formatInt(c.eggs_total)}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums text-brand-dark">
+                    {formatInt(c.commercial)}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums text-ink-muted">
+                    {formatInt(c.losses)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
 
       {canWrite && <BatchForm farms={farms} flocks={flocks} today={todayISOSaoPaulo()} />}
 

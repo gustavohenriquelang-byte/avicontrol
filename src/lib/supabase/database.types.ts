@@ -84,6 +84,13 @@ export type TaskPriority = "baixa" | "media" | "alta";
 export type TaskStatus = "pendente" | "em_andamento" | "concluida" | "cancelada";
 export type AlertLevel = "informativo" | "atencao" | "critico";
 export type AlertStatus = "aberto" | "reconhecido" | "resolvido";
+export type HealthEventType = "vacinacao" | "medicacao" | "ocorrencia" | "tratamento";
+export type ScheduleStatus =
+  | "programada"
+  | "proxima"
+  | "atrasada"
+  | "realizada"
+  | "cancelada";
 
 export interface Database {
   public: {
@@ -904,6 +911,164 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["tasks"]["Insert"]>;
+        Relationships: [];
+      };
+      vaccines: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          manufacturer: string | null;
+          target_disease: string | null;
+          route: string | null;
+          doses: number | null;
+          withdrawal_days: number | null;
+          notes: string | null;
+          active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          manufacturer?: string | null;
+          target_disease?: string | null;
+          route?: string | null;
+          doses?: number | null;
+          withdrawal_days?: number | null;
+          notes?: string | null;
+          active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["vaccines"]["Insert"]>;
+        Relationships: [];
+      };
+      medications: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          manufacturer: string | null;
+          kind: string | null;
+          withdrawal_days: number | null;
+          notes: string | null;
+          active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          manufacturer?: string | null;
+          kind?: string | null;
+          withdrawal_days?: number | null;
+          notes?: string | null;
+          active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["medications"]["Insert"]>;
+        Relationships: [];
+      };
+      health_events: {
+        Row: {
+          id: string;
+          organization_id: string;
+          flock_id: string | null;
+          house_id: string | null;
+          event_date: string;
+          event_type: HealthEventType;
+          vaccine_id: string | null;
+          medication_id: string | null;
+          description: string | null;
+          dose: string | null;
+          responsible: string | null;
+          withdrawal_until: string | null;
+          notes: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          flock_id?: string | null;
+          house_id?: string | null;
+          event_date?: string;
+          event_type: HealthEventType;
+          vaccine_id?: string | null;
+          medication_id?: string | null;
+          description?: string | null;
+          dose?: string | null;
+          responsible?: string | null;
+          withdrawal_until?: string | null;
+          notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["health_events"]["Insert"]>;
+        Relationships: [];
+      };
+      vaccination_schedules: {
+        Row: {
+          id: string;
+          organization_id: string;
+          flock_id: string | null;
+          vaccine_id: string | null;
+          scheduled_date: string;
+          status: ScheduleStatus;
+          applied_date: string | null;
+          responsible: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          flock_id?: string | null;
+          vaccine_id?: string | null;
+          scheduled_date: string;
+          status?: ScheduleStatus;
+          applied_date?: string | null;
+          responsible?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["vaccination_schedules"]["Insert"]>;
+        Relationships: [];
+      };
+      alerts: {
+        Row: {
+          id: string;
+          organization_id: string;
+          alert_type: string;
+          level: AlertLevel;
+          title: string;
+          message: string | null;
+          entity_type: string | null;
+          entity_id: string | null;
+          status: AlertStatus;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          alert_type: string;
+          level?: AlertLevel;
+          title: string;
+          message?: string | null;
+          entity_type?: string | null;
+          entity_id?: string | null;
+          status?: AlertStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["alerts"]["Insert"]>;
         Relationships: [];
       };
     };

@@ -478,6 +478,35 @@ export const demoTasks: (Tables<"tasks"> & { flocks: { code: string } | null })[
   { id: "task-3", organization_id: DEMO_ORG_ID, title: "Conferir estoque de ração", description: null, farm_id: "farm-1", house_id: null, flock_id: null, assigned_to: null, priority: "baixa", due_date: addDaysISO(DEMO_TODAY, -1), recurrence: null, status: "concluida", created_by: "demo-user", created_at: now, updated_at: now, flocks: null },
 ];
 
+export const demoVaccines: Tables<"vaccines">[] = [
+  { id: "vac-1", organization_id: DEMO_ORG_ID, name: "Newcastle (La Sota)", manufacturer: "Zoetis", target_disease: "Doença de Newcastle", route: "Água de bebida", doses: 1, withdrawal_days: 0, notes: null, active: true, created_at: now, updated_at: now },
+  { id: "vac-2", organization_id: DEMO_ORG_ID, name: "Bouba Aviária", manufacturer: "MSD", target_disease: "Varíola aviária", route: "Punctura de asa", doses: 1, withdrawal_days: 0, notes: null, active: true, created_at: now, updated_at: now },
+];
+
+export const demoMedications: Tables<"medications">[] = [
+  { id: "med-1", organization_id: DEMO_ORG_ID, name: "Enrofloxacina 10%", manufacturer: "Ourofino", kind: "Antibiótico", withdrawal_days: 7, notes: null, active: true, created_at: now, updated_at: now },
+  { id: "med-2", organization_id: DEMO_ORG_ID, name: "Complexo vitamínico", manufacturer: "Vetnil", kind: "Vitamina", withdrawal_days: 0, notes: null, active: true, created_at: now, updated_at: now },
+];
+
+type HealthRow = Tables<"health_events"> & {
+  flocks: { code: string } | null;
+  vaccines: { name: string } | null;
+  medications: { name: string } | null;
+};
+export const demoHealthEvents: HealthRow[] = [
+  { id: "he-1", organization_id: DEMO_ORG_ID, flock_id: "flock-1", house_id: null, event_date: addDaysISO(DEMO_TODAY, -10), event_type: "vacinacao", vaccine_id: "vac-1", medication_id: null, description: "Reforço Newcastle", dose: "1 dose", responsible: "Téc. João", withdrawal_until: null, notes: null, created_by: "demo-user", created_at: now, flocks: { code: "L01" }, vaccines: { name: "Newcastle (La Sota)" }, medications: null },
+  { id: "he-2", organization_id: DEMO_ORG_ID, flock_id: "flock-2", house_id: null, event_date: addDaysISO(DEMO_TODAY, -4), event_type: "medicacao", vaccine_id: null, medication_id: "med-1", description: "Tratamento respiratório", dose: "10 mL/100L", responsible: "Vet. Ana", withdrawal_until: addDaysISO(DEMO_TODAY, 3), notes: null, created_by: "demo-user", created_at: now, flocks: { code: "L02" }, vaccines: null, medications: { name: "Enrofloxacina 10%" } },
+];
+
+type SchedRow = Tables<"vaccination_schedules"> & {
+  flocks: { code: string } | null;
+  vaccines: { name: string } | null;
+};
+export const demoSchedules: SchedRow[] = [
+  { id: "sc-1", organization_id: DEMO_ORG_ID, flock_id: "flock-2", vaccine_id: "vac-1", scheduled_date: addDaysISO(DEMO_TODAY, 3), status: "programada", applied_date: null, responsible: null, notes: null, created_at: now, updated_at: now, flocks: { code: "L02" }, vaccines: { name: "Newcastle (La Sota)" } },
+  { id: "sc-2", organization_id: DEMO_ORG_ID, flock_id: "flock-1", vaccine_id: "vac-2", scheduled_date: addDaysISO(DEMO_TODAY, -2), status: "atrasada", applied_date: null, responsible: null, notes: null, created_at: now, updated_at: now, flocks: { code: "L01" }, vaccines: { name: "Bouba Aviária" } },
+];
+
 /** Métricas agregadas para o dashboard em modo demo. */
 export const demoOverview = {
   farms: demoFarms.length,

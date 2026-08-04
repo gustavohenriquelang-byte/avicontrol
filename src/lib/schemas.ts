@@ -294,6 +294,62 @@ export const TASK_STATUS_LABELS: Record<string, string> = {
   cancelada: "Cancelada",
 };
 
+export const vaccineSchema = z.object({
+  name: z.string().trim().min(2, "Nome é obrigatório"),
+  manufacturer: optionalText,
+  target_disease: optionalText,
+  route: optionalText,
+  doses: optionalNumber,
+  withdrawal_days: optionalNumber,
+  active: z.coerce.boolean().default(true),
+});
+export type VaccineInput = z.infer<typeof vaccineSchema>;
+
+export const medicationSchema = z.object({
+  name: z.string().trim().min(2, "Nome é obrigatório"),
+  manufacturer: optionalText,
+  kind: optionalText,
+  withdrawal_days: optionalNumber,
+  active: z.coerce.boolean().default(true),
+});
+export type MedicationInput = z.infer<typeof medicationSchema>;
+
+export const healthEventSchema = z.object({
+  event_type: z.enum(["vacinacao", "medicacao", "ocorrencia", "tratamento"]),
+  flock_id: z.string().uuid().optional().or(z.literal("").transform(() => undefined)),
+  event_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida"),
+  vaccine_id: z.string().uuid().optional().or(z.literal("").transform(() => undefined)),
+  medication_id: z.string().uuid().optional().or(z.literal("").transform(() => undefined)),
+  description: optionalText,
+  dose: optionalText,
+  responsible: optionalText,
+  notes: optionalText,
+});
+export type HealthEventInput = z.infer<typeof healthEventSchema>;
+
+export const scheduleSchema = z.object({
+  flock_id: z.string().uuid().optional().or(z.literal("").transform(() => undefined)),
+  vaccine_id: z.string().uuid().optional().or(z.literal("").transform(() => undefined)),
+  scheduled_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida"),
+  notes: optionalText,
+});
+export type ScheduleInput = z.infer<typeof scheduleSchema>;
+
+export const HEALTH_EVENT_LABELS: Record<string, string> = {
+  vacinacao: "Vacinação",
+  medicacao: "Medicação",
+  ocorrencia: "Ocorrência",
+  tratamento: "Tratamento",
+};
+
+export const SCHEDULE_STATUS_LABELS: Record<string, string> = {
+  programada: "Programada",
+  proxima: "Próxima",
+  atrasada: "Atrasada",
+  realizada: "Realizada",
+  cancelada: "Cancelada",
+};
+
 const manureUnit = z.enum(["kg", "tonelada", "saco", "big_bag", "m3"]);
 
 export const manureProductionSchema = z.object({
