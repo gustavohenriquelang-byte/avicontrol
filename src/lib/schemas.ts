@@ -350,6 +350,60 @@ export const SCHEDULE_STATUS_LABELS: Record<string, string> = {
   cancelada: "Cancelada",
 };
 
+export const customerSchema = z.object({
+  name: z.string().trim().min(2, "Nome é obrigatório"),
+  doc: optionalText,
+  phone: optionalText,
+  email: z.string().trim().email("E-mail inválido").optional().or(z.literal("").transform(() => undefined)),
+  address: optionalText,
+  city: optionalText,
+  state: optionalText,
+  credit_limit: optionalNumber,
+  notes: optionalText,
+  active: z.coerce.boolean().default(true),
+});
+export type CustomerInput = z.infer<typeof customerSchema>;
+
+export const productSchema = z.object({
+  name: z.string().trim().min(2, "Nome é obrigatório"),
+  unit: z.string().trim().min(1).default("duzia"),
+  classification: optionalText,
+  price: optionalNumber,
+  active: z.coerce.boolean().default(true),
+});
+export type ProductInput = z.infer<typeof productSchema>;
+
+export const financialEntrySchema = z.object({
+  entry_type: z.enum(["receita", "despesa"]),
+  category_id: z.string().uuid().optional().or(z.literal("").transform(() => undefined)),
+  description: z.string().trim().min(2, "Descrição é obrigatória"),
+  amount: z.coerce.number().positive("Valor deve ser maior que zero"),
+  entry_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida"),
+  due_date: optionalText,
+  status: z.enum(["pendente", "pago"]),
+  cost_center: optionalText,
+  farm_id: z.string().uuid().optional().or(z.literal("").transform(() => undefined)),
+  payment_method: optionalText,
+});
+export type FinancialEntryInput = z.infer<typeof financialEntrySchema>;
+
+export const SALES_ORDER_STATUS_LABELS: Record<string, string> = {
+  orcamento: "Orçamento",
+  pedido: "Pedido",
+  separado: "Separado",
+  faturado: "Faturado",
+  entregue: "Entregue",
+  cancelado: "Cancelado",
+};
+
+/** Categorias iniciais sugeridas (item 21). */
+export const DEFAULT_EXPENSE_CATEGORIES = [
+  "Ração", "Aves", "Medicamentos", "Vacinas", "Mão de obra", "Energia",
+  "Água", "Embalagens", "Transporte", "Manutenção", "Combustível",
+  "Impostos", "Serviços", "Outras",
+];
+export const DEFAULT_REVENUE_CATEGORIES = ["Ovos", "Esterco", "Aves descarte", "Outras"];
+
 const manureUnit = z.enum(["kg", "tonelada", "saco", "big_bag", "m3"]);
 
 export const manureProductionSchema = z.object({

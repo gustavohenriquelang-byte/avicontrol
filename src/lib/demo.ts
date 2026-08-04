@@ -507,6 +507,78 @@ export const demoSchedules: SchedRow[] = [
   { id: "sc-2", organization_id: DEMO_ORG_ID, flock_id: "flock-1", vaccine_id: "vac-2", scheduled_date: addDaysISO(DEMO_TODAY, -2), status: "atrasada", applied_date: null, responsible: null, notes: null, created_at: now, updated_at: now, flocks: { code: "L01" }, vaccines: { name: "Bouba Aviária" } },
 ];
 
+export const demoCustomers: Tables<"customers">[] = [
+  { id: "cust-1", organization_id: DEMO_ORG_ID, name: "Mercado Central", doc: "12.345.678/0001-90", phone: "(18) 3421-1000", email: "compras@mercadocentral.com", address: "Av. Brasil, 500", city: "Bastos", state: "SP", credit_limit: 10000, notes: null, active: true, deleted_at: null, created_at: now, updated_at: now },
+  { id: "cust-2", organization_id: DEMO_ORG_ID, name: "Padaria Pão Quente", doc: "98.765.432/0001-10", phone: "(18) 3421-2000", email: null, address: null, city: "Tupã", state: "SP", credit_limit: 5000, notes: null, active: true, deleted_at: null, created_at: now, updated_at: now },
+  { id: "cust-3", organization_id: DEMO_ORG_ID, name: "Distribuidora Ovo Bom", doc: "45.678.912/0001-33", phone: "(14) 3333-4444", email: "contato@ovobom.com", address: null, city: "Marília", state: "SP", credit_limit: 25000, notes: null, active: true, deleted_at: null, created_at: now, updated_at: now },
+];
+
+export const demoProducts: Tables<"products">[] = [
+  { id: "prod-1", organization_id: DEMO_ORG_ID, name: "Ovo branco grande", unit: "duzia", classification: "Branco / Grande", price: 6.5, notes: null, active: true, created_at: now, updated_at: now },
+  { id: "prod-2", organization_id: DEMO_ORG_ID, name: "Ovo branco médio", unit: "duzia", classification: "Branco / Médio", price: 5.8, notes: null, active: true, created_at: now, updated_at: now },
+  { id: "prod-3", organization_id: DEMO_ORG_ID, name: "Ovo vermelho grande", unit: "duzia", classification: "Vermelho / Grande", price: 7.2, notes: null, active: true, created_at: now, updated_at: now },
+];
+
+type OrderRow = Tables<"sales_orders"> & { customers: { name: string } | null };
+export const demoSalesOrders: OrderRow[] = [
+  { id: "so-1", organization_id: DEMO_ORG_ID, customer_id: "cust-1", order_date: addDaysISO(DEMO_TODAY, -2), status: "faturado", subtotal: 3250, discount: 0, freight: 50, total: 3300, payment_method: "Prazo 28d", due_date: addDaysISO(DEMO_TODAY, 26), notes: null, created_by: "demo-user", created_at: now, updated_at: now, customers: { name: "Mercado Central" } },
+  { id: "so-2", organization_id: DEMO_ORG_ID, customer_id: "cust-3", order_date: addDaysISO(DEMO_TODAY, -1), status: "pedido", subtotal: 7200, discount: 200, freight: 0, total: 7000, payment_method: "PIX", due_date: DEMO_TODAY, notes: null, created_by: "demo-user", created_at: now, updated_at: now, customers: { name: "Distribuidora Ovo Bom" } },
+];
+
+type FinCatRow = Tables<"financial_categories">;
+export const demoFinCategories: FinCatRow[] = [
+  { id: "fc-1", organization_id: DEMO_ORG_ID, name: "Ovos", kind: "receita", active: true, created_at: now },
+  { id: "fc-2", organization_id: DEMO_ORG_ID, name: "Esterco", kind: "receita", active: true, created_at: now },
+  { id: "fc-3", organization_id: DEMO_ORG_ID, name: "Ração", kind: "despesa", active: true, created_at: now },
+  { id: "fc-4", organization_id: DEMO_ORG_ID, name: "Mão de obra", kind: "despesa", active: true, created_at: now },
+  { id: "fc-5", organization_id: DEMO_ORG_ID, name: "Energia", kind: "despesa", active: true, created_at: now },
+];
+
+type FinRow = Tables<"financial_entries"> & { financial_categories: { name: string } | null };
+export const demoFinEntries: FinRow[] = [
+  fin("fe-1", "receita", "fc-1", "Venda de ovos - Mercado Central", 3300, -2, "pago", "Ovos"),
+  fin("fe-2", "receita", "fc-2", "Venda de esterco - Fazenda Santa Rita", 3500, -6, "pendente", "Esterco"),
+  fin("fe-3", "despesa", "fc-3", "Compra de ração Postura Fase 1", 6900, -3, "pago", "Ração"),
+  fin("fe-4", "despesa", "fc-4", "Folha de pagamento", 8200, -5, "pago", "Mão de obra"),
+  fin("fe-5", "despesa", "fc-5", "Conta de energia", 2400, -4, "pendente", "Energia"),
+  fin("fe-6", "receita", "fc-1", "Venda de ovos - Distribuidora Ovo Bom", 7000, -1, "pendente", "Ovos"),
+];
+
+function fin(
+  id: string,
+  type: Tables<"financial_entries">["entry_type"],
+  catId: string,
+  desc: string,
+  amount: number,
+  dayOffset: number,
+  status: Tables<"financial_entries">["status"],
+  catName: string
+): FinRow {
+  const date = addDaysISO(DEMO_TODAY, dayOffset);
+  return {
+    id,
+    organization_id: DEMO_ORG_ID,
+    entry_type: type,
+    category_id: catId,
+    description: desc,
+    amount,
+    entry_date: date,
+    due_date: status === "pendente" ? addDaysISO(date, 20) : date,
+    paid_date: status === "pago" ? date : null,
+    status,
+    cost_center: null,
+    farm_id: "farm-1",
+    flock_id: null,
+    payment_method: null,
+    source_type: null,
+    source_id: null,
+    created_by: "demo-user",
+    created_at: now,
+    updated_at: now,
+    financial_categories: { name: catName },
+  };
+}
+
 /** Métricas agregadas para o dashboard em modo demo. */
 export const demoOverview = {
   farms: demoFarms.length,

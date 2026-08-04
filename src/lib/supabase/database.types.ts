@@ -92,6 +92,16 @@ export type ScheduleStatus =
   | "realizada"
   | "cancelada";
 
+export type SalesOrderStatus =
+  | "orcamento"
+  | "pedido"
+  | "separado"
+  | "faturado"
+  | "entregue"
+  | "cancelado";
+export type FinancialEntryType = "receita" | "despesa";
+export type FinancialEntryStatus = "pendente" | "pago";
+
 export interface Database {
   public: {
     Tables: {
@@ -1069,6 +1079,206 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["alerts"]["Insert"]>;
+        Relationships: [];
+      };
+      customers: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          doc: string | null;
+          phone: string | null;
+          email: string | null;
+          address: string | null;
+          city: string | null;
+          state: string | null;
+          credit_limit: number | null;
+          notes: string | null;
+          active: boolean;
+          deleted_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          doc?: string | null;
+          phone?: string | null;
+          email?: string | null;
+          address?: string | null;
+          city?: string | null;
+          state?: string | null;
+          credit_limit?: number | null;
+          notes?: string | null;
+          active?: boolean;
+          deleted_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["customers"]["Insert"]>;
+        Relationships: [];
+      };
+      products: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          unit: string;
+          classification: string | null;
+          price: number | null;
+          notes: string | null;
+          active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          unit?: string;
+          classification?: string | null;
+          price?: number | null;
+          notes?: string | null;
+          active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["products"]["Insert"]>;
+        Relationships: [];
+      };
+      sales_orders: {
+        Row: {
+          id: string;
+          organization_id: string;
+          customer_id: string | null;
+          order_date: string;
+          status: SalesOrderStatus;
+          subtotal: number;
+          discount: number;
+          freight: number;
+          total: number;
+          payment_method: string | null;
+          due_date: string | null;
+          notes: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          customer_id?: string | null;
+          order_date?: string;
+          status?: SalesOrderStatus;
+          subtotal?: number;
+          discount?: number;
+          freight?: number;
+          total?: number;
+          payment_method?: string | null;
+          due_date?: string | null;
+          notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["sales_orders"]["Insert"]>;
+        Relationships: [];
+      };
+      sales_order_items: {
+        Row: {
+          id: string;
+          organization_id: string;
+          order_id: string;
+          product_id: string | null;
+          description: string;
+          classification: string | null;
+          quantity: number;
+          unit: string;
+          unit_price: number;
+          total: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          order_id: string;
+          product_id?: string | null;
+          description: string;
+          classification?: string | null;
+          quantity?: number;
+          unit?: string;
+          unit_price?: number;
+          total?: number;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["sales_order_items"]["Insert"]>;
+        Relationships: [];
+      };
+      financial_categories: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          kind: FinancialEntryType;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          kind: FinancialEntryType;
+          active?: boolean;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["financial_categories"]["Insert"]>;
+        Relationships: [];
+      };
+      financial_entries: {
+        Row: {
+          id: string;
+          organization_id: string;
+          entry_type: FinancialEntryType;
+          category_id: string | null;
+          description: string;
+          amount: number;
+          entry_date: string;
+          due_date: string | null;
+          paid_date: string | null;
+          status: FinancialEntryStatus;
+          cost_center: string | null;
+          farm_id: string | null;
+          flock_id: string | null;
+          payment_method: string | null;
+          source_type: string | null;
+          source_id: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          entry_type: FinancialEntryType;
+          category_id?: string | null;
+          description: string;
+          amount?: number;
+          entry_date?: string;
+          due_date?: string | null;
+          paid_date?: string | null;
+          status?: FinancialEntryStatus;
+          cost_center?: string | null;
+          farm_id?: string | null;
+          flock_id?: string | null;
+          payment_method?: string | null;
+          source_type?: string | null;
+          source_id?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["financial_entries"]["Insert"]>;
         Relationships: [];
       };
     };
